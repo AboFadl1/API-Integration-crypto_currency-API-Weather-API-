@@ -1,0 +1,68 @@
+# Explanation of utils.py
+
+This file contains helper functions and a custom error class used by our scripts (crypto_price.py and weather.py). 
+The purpose is to avoid repeating code for common tasks like making API calls and printing results.
+
+------------------------------------------------
+1) import requests
+------------------------------------------------
+We import the 'requests' library, which is the standard Python package for making HTTP requests (to APIs or websites).
+
+------------------------------------------------
+2) DEFAULT_TIMEOUT = 10
+------------------------------------------------
+We define a constant (10 seconds). 
+This ensures that if the API server is too slow, our program won’t hang forever. 
+It will stop after 10 seconds and raise an error.
+
+------------------------------------------------
+3) class APIError(Exception)
+------------------------------------------------
+We define a custom exception class called APIError. 
+- "Exception" is Python’s built-in base class for errors. 
+- By making our own error type, we can raise clear errors (like "Network error" or "Bad JSON") and handle them separately in our main scripts.
+
+------------------------------------------------
+4) def get_json(url, params=None)
+------------------------------------------------
+This is the most important helper function. It:
+1. Sends a GET request to the given API endpoint (url) with optional query parameters (params).
+2. Uses our DEFAULT_TIMEOUT to avoid waiting too long.
+3. Handles three types of problems:
+   - Network issues (no internet, DNS failure, etc.)
+   - HTTP errors (404 Not Found, 500 Server Error, etc.)
+   - Invalid JSON responses (when the server doesn’t return valid JSON).
+
+How it works step by step:
+- Try block: sends the request with requests.get(...).
+- If network error happens → raises APIError("Network error").
+- If response status is not OK (r.ok is False) → raise APIError with HTTP status code and a short message.
+- Try to parse response JSON with r.json().
+- If parsing fails → raise APIError("Response was not valid JSON").
+- If everything works, return the parsed JSON dictionary.
+
+------------------------------------------------
+5) def print_kv(title, data)
+------------------------------------------------
+This function formats and prints key-value pairs in a nice way.
+
+Steps:
+- Print a title (e.g., "=== Crypto Price ===").
+- Calculate the width of the longest key so the output is aligned.
+- Loop through the dictionary and print each key and value neatly.
+
+Example:
+=== Crypto Price ===
+coin     : bitcoin
+currency : usd
+price    : 20000
+
+------------------------------------------------
+# Summary
+------------------------------------------------
+utils.py provides reusable tools:
+- APIError → custom error handling
+- get_json → safe API request with error handling
+- print_kv → pretty printing results
+
+This keeps our main scripts (crypto_price.py and weather.py) short and focused on their specific tasks.
